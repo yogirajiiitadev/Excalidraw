@@ -17,7 +17,7 @@ export const userAuth = (req: AuthenticatedRequest, res: Response, next: NextFun
   try {
     const decoded = jwt.verify(token, JWT_SECRET); // Define token payload type
     // @ts-ignore
-    req.user = { userId: decoded.userId }; // Attach user info to request
+    req.userId = decoded.userId; // Attach user info to request
     next(); // Proceed to next middleware/route
   } catch (error) {
     res.status(401).json({ message: "Unauthorized: Invalid token" });

@@ -3,43 +3,85 @@ import { userAuth } from "./middlewares/userAuth";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import jwt from "jsonwebtoken";
 import { CreateUserSchema, CreateSignInSchema, CreateRoomSchema } from "@repo/common/types";
+import { prismaClient } from "@repo/db/client";
 
 const app = express();
 app.use(express.json());
 
-app.post("/signup", (req, res) => {
-    const data = CreateUserSchema.safeParse(req.body);
-    if (!data.success) {
-        res.status(400).json({ error: data.error });
+app.post("/signup", async(req, res) => {
+    const parsedData = CreateUserSchema.safeParse(req.body);
+    if (!parsedData.success) {
+        res.status(400).json({ error: parsedData.error });
         return;
     }
-  res.send("Signup route works!");
+    try{
+      const user = await prismaClient.user.create({
+        data:{
+          email: parsedData.data.username,
+          // todo: hash password
+          password: parsedData.data.password,
+          name: parsedData.data.name,
+        }
+      });
+      res.json({
+        userId: user.id
+      });
+    }
+    catch (e) {
+        res.status(411).json({ error: "User already exists with this username" });
+    }
 });
 
-app.post("/signin", (req, res) => {
-    const data = CreateSignInSchema.safeParse(req.body);
-    if (!data.success) {
-        res.status(400).json({ error: data.error });
+app.post("/signin", async (req, res) => {
+    const parsedData = CreateSignInSchema.safeParse(req.body);
+    if (!parsedData.success) {
+        res.status(400).json({ error: parsedData.error });
         return;
     }
-    const userId = 1;
+    // todo: compare to a hashed password
+    const user = await prismaClient.user.findFirst({
+      where: {
+        email: parsedData.data.username,
+        password: parsedData.data.password,
+      }});
+    if (!user) {
+        res.status(401).json({ error: "Invalid credentials or User not available" });
+        return;
+    }
     const token = jwt.sign({
-        userId
+        userId: user?.id
     }, JWT_SECRET)
     res.json({token});
   });
 
 // Use `userAuth` middleware only where required
-app.post("/create-room", userAuth, (req, res) => {
-    const data = CreateRoomSchema.safeParse(req.body);
-    if (!data.success) {
-        res.status(400).json({ error: data.error });
+app.post("/create-room", userAuth,async (req, res) => {
+    const parsedData = CreateRoomSchema.safeParse(req.body);
+    if (!parsedData.success) {
+        res.status(400).json({ error: parsedData.error });
         return;
     }
-  res.json({
-    roomId: 123,
-    message: "Room created successfully"
-  })
+    // @ts-ignore
+    const userId = req?.userId;
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+    }
+
+    try{
+      const room = await prismaClient.room.create({
+        data: {
+            slug: parsedData.data.name,
+            adminId: userId
+        }
+      });
+      res.json({
+        roomId: room.id,
+        message: "Room created successfully"
+      });
+    }
+    catch(e: any){
+      res.status(411).json({ error:"Slug name should be unique!" });
+    }
 });
 
 app.listen(3001, () => {
