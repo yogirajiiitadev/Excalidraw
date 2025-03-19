@@ -4,10 +4,11 @@ import { JWT_SECRET } from "@repo/backend-common/config";
 import jwt from "jsonwebtoken";
 import { CreateUserSchema, CreateSignInSchema, CreateRoomSchema } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
-
+app.use(cors());
 app.post("/signup", async(req, res) => {
     const parsedData = CreateUserSchema.safeParse(req.body);
     if (!parsedData.success) {
@@ -86,6 +87,7 @@ app.post("/create-room", userAuth,async (req, res) => {
 
 app.get('/chats/:roomId', async (req, res) =>{
     const roomId = Number(req.params.roomId);
+    console.log("Chats requested for room: ", roomId);
     const chats = await prismaClient.chat.findMany({
       where: {
         roomId
@@ -95,8 +97,20 @@ app.get('/chats/:roomId', async (req, res) =>{
       },
       take: 50
     });
-    res.json(chats);
-})
+    res.json({messages: chats});
+});
+
+app.get("/room/:slug", async (req, res) => {
+  const slug = req.params.slug;
+  const room = await prismaClient.room.findFirst({
+    where: {
+      slug
+    }
+  });
+  res.json({
+    room
+  })
+});
 
 app.listen(3001, () => {
   console.log("Server running on port 3001");

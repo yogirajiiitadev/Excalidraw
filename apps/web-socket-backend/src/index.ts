@@ -74,7 +74,7 @@ wss.on("connection", function connection(ws, request) {
                 await prismaClient.chat.create({
                     data: {
                         message: message,
-                        roomId: roomId,
+                        roomId: Number(roomId),
                         userId: userId
                     }
                 })
@@ -86,7 +86,7 @@ wss.on("connection", function connection(ws, request) {
                 const roomUsers = users.filter(u => u.rooms.includes(roomId));
                 roomUsers.forEach(u => {
                     u.ws.send(JSON.stringify({
-                        type: "message",
+                        type: "chat",
                         message: message
                     }));
                 });
