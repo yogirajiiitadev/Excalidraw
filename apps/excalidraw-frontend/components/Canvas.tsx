@@ -1,15 +1,63 @@
-import { initDraw } from "@/app/draw";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { IconButton } from "./IconButton";
+import { Circle, PencilIcon, RectangleHorizontalIcon } from "lucide-react";
+import { Game } from "@/app/draw/Game";
+
+type Shape = "circle" | "rect" | "pencil";
 
 export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [selectedTool, setSelectedTool] = useState<Shape>("pencil");
+    const [game, setGame] = useState<Game>();
+
+    useEffect(()=>{
+        game?.setShape(selectedTool);
+        console.log("Selected Tool changed!!!!!");
+    },[selectedTool, game]);
+
     useEffect(()=>{
         if(canvasRef.current){
             const canvas = canvasRef.current;
-            
-            initDraw(canvas, roomId, ws);
+            const g = new Game(canvas, roomId, ws);
+            setGame(g);
+            return () => {
+                g.destroy();
+            }
         }
     },[canvasRef]);
 
-    return <canvas ref={canvasRef} width={2000} height={700}></canvas>
+    return(
+        <div style={{ height: "100vh", overflow: "hidden" }}>
+            <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
+            <TopBar selectedTool={selectedTool} setSelectedTool={setSelectedTool}/>
+        </div>
+    ) 
+}
+
+function TopBar({selectedTool, setSelectedTool}:{selectedTool: Shape, setSelectedTool: (s: Shape) => void}){
+    
+    return (
+        <div style={{ 
+            position: "fixed", 
+            top: 10, 
+            left: "50%", 
+            transform: "translateX(-50%)", // Centers the bar horizontally
+            display: "flex", 
+            justifyContent: "center",
+            alignItems: "center",
+            background: "rgba(0, 191, 255, 0.4)", // Optional: Adds a background for visibility
+            boxShadow: "0 4px 15px rgba(70, 130, 180, 0.5), 0 0 12px rgba(0, 191, 255, 0.4)", // Optional: Adds a shadow
+            padding: "8px", 
+            borderRadius: "8px"
+        }}>
+            <div className="flex gap-1">
+                <IconButton activated={selectedTool === "pencil"} icon={<PencilIcon/>} 
+                    onClick={()=>{  setSelectedTool("pencil") }} />  
+                <IconButton activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon/>} 
+                    onClick={()=>{ setSelectedTool("rect")  }} />  
+                <IconButton activated={selectedTool === "circle"} icon={<Circle/>} 
+                    onClick={()=>{ setSelectedTool("circle")  }} /> 
+            </div>
+        </div>
+    )
 }

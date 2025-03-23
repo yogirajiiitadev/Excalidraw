@@ -77,7 +77,7 @@ wss.on("connection", function connection(ws, request) {
                         roomId: Number(roomId),
                         userId: userId
                     }
-                })
+                }) 
             } catch(e){
                 console.error("Error inserting chat into DB: ", e);
             }
