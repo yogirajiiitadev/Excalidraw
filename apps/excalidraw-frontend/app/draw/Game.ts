@@ -17,9 +17,16 @@ type Shape = {
     startY: number;
     endX: number;
     endY: number;
+} | {
+    type: "text";
+    startX: number;
+    startY: number;
+    font: string;
+    color: string;
+    inputText: string;
 };
 
-type Tool = "rect" | "circle" | "pencil";
+type Tool = "rect" | "circle" | "pencil" | "text";
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -31,6 +38,67 @@ export class Game {
     private startX = 0;
     private startY = 0;
     private selectedTool = "pencil"; 
+
+    private createTextInput(x: number, y: number) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.style.position = "absolute";
+        input.style.left = `${x}px`;
+        input.style.top = `${y}px`;
+        input.style.font = "20px Arial";
+        input.style.color = "black";
+        input.style.background = "grey";
+        input.style.border = "none";
+        input.style.outline = "none";
+        input.style.padding = "2px";
+        document.body.appendChild(input);
+        input.focus();
+        console.log("Input element created inside createTextInput: ", input);
+
+        input.addEventListener("keydown", (event) => {
+            console.log("Event key pressed: ", event.key);
+            
+            if (event.key === "Enter") {
+                const text = input.value.trim();
+                if (text) {
+                    this.addTextToCanvas(text, x, y);
+                }
+                document.body.removeChild(input);
+            } else if (event.key === "Backspace") {
+                console.log("Backspace pressed, text: ", input.value);
+            }
+        });
+        
+        input.addEventListener("blur", () => {
+            const text = input.value.trim();
+            if (text) {
+                this.addTextToCanvas(text, x, y);
+            }
+            document.body.removeChild(input);
+            console.log("Input focus lost!!");
+        });
+    }
+
+    private addTextToCanvas(text: string, x: number, y: number) {
+        const textShape: Shape = {
+            type: "text",
+            startX: x,
+            startY: y,
+            inputText: text,
+            font: "20px Arial",
+            color: "white",
+        };
+    
+        this.existingShapes.push(textShape);
+        this.clearCanvas();
+        this.socket.send(
+            JSON.stringify({
+                type: "chat",
+                message: JSON.stringify({ currentShape: textShape }),
+                roomId: this.roomId,
+            })
+        );
+    }
 
     constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket){ // constructors cant be async!!!
         this.canvas = canvas;
@@ -67,12 +135,12 @@ export class Game {
         }
     }
 
-    mouseDownHandler = (e: any) => {
+    mouseDownHandler = (e: MouseEvent) => {
         this.clicked = true;
         this.startX = e.clientX;
         this.startY = e.clientY;
-        console.log("Current selected tool: ", this.selectedTool);
-    }
+        console.log("Current selected tool 2: ", this.selectedTool);
+    };
 
     mouseMoveHandler = (e: any) => {
         if(this.clicked){
@@ -149,12 +217,24 @@ export class Game {
         this.clearCanvas();
     }
 
+    mouseDoubleClickHandler = (e: any) => {
+        this.clicked = true;
+        this.startX = e.clientX;
+        this.startY = e.clientY;
+        if (this.selectedTool === "text") {
+            this.createTextInput(this.startX, this.startY);
+        }
+        console.log("Canvas was double-clicked at:", e.clientX, e.clientY);
+    }
+
     destroy(){
         this.canvas.removeEventListener("mousedown",this.mouseDownHandler);
 
         this.canvas.removeEventListener("mouseup",this.mouseUpHandler);
 
         this.canvas.removeEventListener("mousemove",this.mouseMoveHandler);
+
+        this.canvas.removeEventListener("dblclick",this.mouseDoubleClickHandler);
     }
 
     initMouseHandlers(){
@@ -163,6 +243,8 @@ export class Game {
         this.canvas.addEventListener("mouseup",this.mouseUpHandler);
 
         this.canvas.addEventListener("mousemove",this.mouseMoveHandler);
+
+        this.canvas.addEventListener("dblclick",this.mouseDoubleClickHandler);
     }
 
     clearCanvas(){
@@ -186,6 +268,11 @@ export class Game {
                 this.ctx.moveTo(shape.startX,shape.startY);
                 this.ctx.lineTo(shape.endX,shape.endY);
                 this.ctx.stroke();
+            }
+            else if (shape.type === "text") {
+                this.ctx.font = shape.font || "16px Arial";  
+                this.ctx.fillStyle = shape.color || "white";
+                this.ctx.fillText(shape.inputText, shape.startX, shape.startY);
             }
         });
     }

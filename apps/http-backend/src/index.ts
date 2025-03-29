@@ -8,7 +8,10 @@ import cors from "cors";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000", 
+  credentials: true, // Allow cookies and authentication headers
+}));
 app.post("/signup", async(req, res) => {
     const parsedData = CreateUserSchema.safeParse(req.body);
     if (!parsedData.success) {
@@ -24,16 +27,21 @@ app.post("/signup", async(req, res) => {
           name: parsedData.data.name,
         }
       });
+      const token = jwt.sign({
+        userId: user?.id
+      }, JWT_SECRET)
       res.json({
-        userId: user.id
+        userId: user.id,
+        token: token,
       });
     }
-    catch (e) {
-        res.status(411).json({ error: "User already exists with this username" });
+    catch (e: any) {
+        res.status(411).json({ error: e });
     }
 });
 
 app.post("/signin", async (req, res) => {
+    console.log("Creds received on signin end point: ", req.body);
     const parsedData = CreateSignInSchema.safeParse(req.body);
     if (!parsedData.success) {
         res.status(400).json({ error: parsedData.error });

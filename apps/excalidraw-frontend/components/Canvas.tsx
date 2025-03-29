@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { Circle, PencilIcon, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, PencilIcon, RectangleHorizontalIcon, TextIcon } from "lucide-react";
 import { Game } from "@/app/draw/Game";
 
-type Shape = "circle" | "rect" | "pencil";
+type Shape = "circle" | "rect" | "pencil" | "text";
 
 export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -56,7 +56,9 @@ function TopBar({selectedTool, setSelectedTool}:{selectedTool: Shape, setSelecte
                 <IconButton activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon/>} 
                     onClick={()=>{ setSelectedTool("rect")  }} />  
                 <IconButton activated={selectedTool === "circle"} icon={<Circle/>} 
-                    onClick={()=>{ setSelectedTool("circle")  }} /> 
+                    onClick={()=>{ setSelectedTool("circle")  }} />
+                <IconButton activated={selectedTool === "text"} icon={ <TextIcon/> }
+                    onClick={()=>{ setSelectedTool("text")  }} />
             </div>
         </div>
     )
