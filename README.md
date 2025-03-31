@@ -1,4 +1,3 @@
-Scriblio
 Scriblio is a real-time collaborative drawing platform inspired by Excalidraw. It allows users to create and join drawing rooms where they can collaborate with others by drawing shapes and adding text on a shared canvas.
 Project Overview
 Scriblio is built as a monorepo using Turborepo and pnpm, consisting of three main applications and shared packages:
