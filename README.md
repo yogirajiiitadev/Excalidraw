@@ -1,89 +1,148 @@
-<<<<<<< HEAD
-# Excalidraw
-A collaborative drawing application
-=======
-# Turborepo starter
+Scriblio
+Scriblio is a real-time collaborative drawing platform inspired by Excalidraw. It allows users to create and join drawing rooms where they can collaborate with others by drawing shapes and adding text on a shared canvas.
+Project Overview
+Scriblio is built as a monorepo using Turborepo and pnpm, consisting of three main applications and shared packages:
+Applications
 
-This Turborepo starter is maintained by the Turborepo core team.
+Frontend (Next.js + Tailwind CSS)
 
-## Using this example
+Landing page
+Authentication (Login/Signup)
+Dashboard with available drawing rooms
+Canvas page for collaborative drawing with HTML Canvas
 
-Run the following command:
 
-```sh
-npx create-turbo@latest
-```
+HTTP Backend (Express)
 
-## What's inside?
+Authentication endpoints
+Middleware
+API endpoints for drawing data retrieval
+Fetching last 50 shapes broadcasted in drawing rooms
 
-This Turborepo includes the following packages/apps:
 
-### Apps and Packages
+WebSocket Backend
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Real-time updates broadcasting
+Drawing room collaboration
+Uses WSS library for WebSocket communication
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-### Utilities
 
-This Turborepo has some additional tools already setup for you:
+Shared Packages
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+DB Package
 
-### Build
+Postgres database connection
+Prisma ORM integration
+Schema definitions
+Exports Prisma client for use in backends
 
-To build all apps and packages, run the following command:
 
-```
-cd my-turborepo
-pnpm build
-```
+Common
 
-### Develop
+Zod schema validation
+Shared types and utilities
 
-To develop all apps and packages, run the following command:
 
-```
-cd my-turborepo
+
+Architecture
+CopyScriblio/ (root)
+├── apps/
+│   ├── frontend/          # Next.js frontend application
+│   ├── http-backend/      # Express HTTP API server
+│   └── ws-backend/        # WebSocket server
+├── packages/
+│   ├── db/                # Database package with Prisma
+│   └── common/            # Shared utilities and schemas
+├── package.json
+├── turbo.json
+└── pnpm-workspace.yaml
+Prerequisites
+
+Node.js (16.x or higher)
+pnpm (7.x or higher)
+PostgreSQL database (cloud or local)
+
+Getting Started
+1. Clone the repository
+bashCopygit clone https://github.com/yourusername/Scriblio.git
+cd Scriblio
+2. Install dependencies
+bashCopy# Install pnpm if you don't have it already
+npm install -g pnpm
+
+# Install project dependencies
+pnpm install
+3. Set up environment variables
+Create a .env file in the root directory with the following variables:
+Copy# Database (shared across apps)
+DATABASE_URL=postgresql://username:password@hostname:port/database
+
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_WS_URL=ws://localhost:3002
+
+# HTTP Backend
+PORT=3001
+JWT_SECRET=your_jwt_secret_key
+CORS_ORIGIN=http://localhost:3000
+
+# WebSocket Backend
+WS_PORT=3002
+4. Setup the database
+bashCopy# Generate Prisma client
+pnpm db:generate
+
+# Run database migrations
+pnpm db:migrate
+5. Start the development servers
+bashCopy# Start all applications concurrently
 pnpm dev
-```
+This will start all three applications:
 
-### Remote Caching
+Frontend: http://localhost:3000
+HTTP Backend: http://localhost:3001
+WebSocket Backend: ws://localhost:3002
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+Scripts
+bashCopy# Install dependencies
+pnpm install
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+# Start all applications in development mode
+pnpm dev
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+# Build all applications
+pnpm build
 
-```
-cd my-turborepo
-npx turbo login
-```
+# Start all applications in production mode
+pnpm start
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+# Generate Prisma client
+pnpm db:generate
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+# Run database migrations
+pnpm db:migrate
 
-```
-npx turbo link
-```
+# Lint code
+pnpm lint
 
-## Useful Links
+# Run tests
+pnpm test
+Features
 
-Learn more about the power of Turborepo:
+Real-time Collaboration: Draw and edit with multiple users simultaneously
+Drawing Tools: Create shapes, add text, and customize the canvas
+User Authentication: Secure login and signup
+Room Management: Create and join drawing rooms
+Persistent Storage: Save drawings and continue where you left off
+Responsive Design: Works on desktop and mobile devices
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
->>>>>>> 1945d49 (feat(create-turbo): create basic)
+Technical Implementation
+
+Frontend: Next.js with Tailwind CSS for styling
+Canvas Rendering: Custom HTML Canvas implementation without external libraries
+API Server: Express.js for authentication and data retrieval
+Real-time Updates: WebSocket server for broadcasting drawing changes
+Database: PostgreSQL with Prisma ORM
+Schema Validation: Zod for type-safe data validation
+Project Structure: Turborepo for monorepo management
