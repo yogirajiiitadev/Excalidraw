@@ -80,6 +80,7 @@ app.post("/create-room", userAuth,async (req, res) => {
       const room = await prismaClient.room.create({
         data: {
             slug: parsedData.data.name,
+            description: parsedData.data.description,
             adminId: userId
         }
       });
@@ -117,6 +118,13 @@ app.get("/room/:slug", async (req, res) => {
   });
   res.json({
     room
+  })
+});
+
+app.get("/all-rooms", userAuth, async (req, res) => {
+  const rooms = await prismaClient.room.findMany();
+  res.json({
+    rooms
   })
 });
 

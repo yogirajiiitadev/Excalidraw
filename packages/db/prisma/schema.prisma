@@ -20,6 +20,7 @@ model User {
 model Room {
   id        Int      @id @default(autoincrement())
   slug      String   @unique
+  description String @default("This is a room for collabrative chatting")
   createdAt DateTime @default(now())
   adminId   String
   chats     Chat[]
