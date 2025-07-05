@@ -7,6 +7,7 @@ import { Shapes } from "lucide-react";
 import {Modal} from 'antd';
 import { handleCreateRoomSubmit } from "@/functions/handleCreateRoomSubmit";
 import CommonFooter from "@/components/CommonFooter";
+import Loading from "@/components/Loading";
 
 const Dashboard = () => {
   const router = useRouter();
@@ -30,7 +31,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (token) {
-      fetch_all_rooms(token, setRooms);
+      fetch_all_rooms(token, setRooms, setLoading);
     }
   }, [token, loading]);
 
@@ -104,6 +105,7 @@ const Dashboard = () => {
         </Modal>
         </div>
         <CommonFooter />
+        {loading && <Loading comp="Dashboard" />}
       </div>
   );
 };

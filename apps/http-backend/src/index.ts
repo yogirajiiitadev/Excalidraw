@@ -12,6 +12,7 @@ app.use(cors({
   origin: "http://localhost:3000", 
   credentials: true, // Allow cookies and authentication headers
 }));
+
 app.post("/signup", async(req, res) => {
     const parsedData = CreateUserSchema.safeParse(req.body);
     if (!parsedData.success) {

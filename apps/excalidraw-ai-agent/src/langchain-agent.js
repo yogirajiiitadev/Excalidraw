@@ -1,127 +1,123 @@
-import { ChatPromptTemplate,
-  SystemMessagePromptTemplate,
-  HumanMessagePromptTemplate,
-  MessagesPlaceholder,
- } from "@langchain/core/prompts";
- import { PromptTemplate } from "@langchain/core/prompts";
 import dotenv from "dotenv";
+import { OpenAI } from "openai";
 dotenv.config();
-import { AgentExecutor, createReactAgent } from "langchain/agents";
-import { DynamicTool } from "langchain/tools";
-import { ChatOpenAI } from "@langchain/openai";
-import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 
-// 1. Prompt
-const template = `You are an agent that helps convert drawing instructions into shape objects. Available tools:
-{tools}
-
-Answer the following questions as best you can. You have access to the following tools:
-
-{tools}
-
-Use the following format:
-
-Question: the input question you must answer  
-Thought: you should always think about what to do  
-Action: the action to take, should be one of [{tool_names}]  
-Action Input: the input to the action  
-Observation: the result of the action  
-... (this Thought/Action/Action Input/Observation can repeat N times)  
-Thought: I now know the final answer  
-Final Answer: the final answer to the original input question
-
-Begin!
-
-Question: {input}  
-{agent_scratchpad}`;
-
-const prompt = PromptTemplate.fromTemplate(template);
-
-
-// 2. Azure LLM using LangChain's ChatOpenAI with Azure configuration
-const llm = new ChatOpenAI({
-  temperature: 0.3,
-  openAIApiKey: process.env.AZURE_OPENAI_API_KEY,
-  modelName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
-  openAIApiType: "azure",
-  azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION,
-  azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
-  azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_ENDPOINT,
-  azureOpenAIBasePath: `https://${process.env.AZURE_OPENAI_ENDPOINT}.openai.azure.com`,
-});
-
-// 3. Custom tool for formatting drawing instructions
-const jsonFormatterTool = new DynamicTool({
-  name: "ShapeFormatter",
-  description:
-    "Use this tool to convert user's drawing instructions into a JSON array of shape objects. Only output JSON, and each object must follow shape format with fields like type, coordinates, radius, inputText, etc.",
-  func: async (input) => {
-    return `Just output a JSON array of shape objects based on user instructions. Each object must follow one of the following formats:
-    [
-      {
-        "currentShape": {
-          "type": "circle",
-          "radius": 100,
-          "centerX": 500,
-          "centerY": 200
-        }
-      },
-      {
-        "currentShape": {
-          "type": "rect",
-          "x": 300,
-          "y": 100,
-          "width": 200,
-          "height": 100
-        }
-      },
-      {
-        "currentShape": {
-          "type": "text",
-          "startX": 400,
-          "startY": 250,
-          "inputText": "Hello World",
-          "font": "20px Arial",
-          "color": "black"
-        }
-      },
-      {
-        "currentShape": {
-          "type": "pencil",
-          "startX": 100,
-          "startY": 100,  
-          "endX": 200,
-          "endY": 200
-        }
-      }
-    ]
-    Ensure that the JSON is valid and properly formatted. Do not include any additional text or explanations or trailing or starting comma or other symbols just a stringified array . Only output the JSON array of shape objects. Do not include any other shapes or types. The JSON should only contain the shapes mentioned in the instruction. Ensure correct field names and types.
-    Only include the shapes mentioned in the instruction and ensure correct field names and types.`;
+// 1. Custom tool for formatting drawing instructions
+const jsonFormatterResponse = `Just output a JSON array of shape objects based on user instructions. Each object must follow one of the following formats:
+[
+  {
+    "currentShape": {
+      "type": "circle",
+      "radius": 100,
+      "centerX": 500,
+      "centerY": 200
+    }
   },
-});
+  {
+    "currentShape": {
+      "type": "rect",
+      "x": 300,
+      "y": 100,
+      "width": 200,
+      "height": 100
+    }
+  },
+  {
+    "currentShape": {
+      "type": "text",
+      "startX": 400,
+      "startY": 250,
+      "inputText": "Hello World",
+      "font": "20px Arial",
+      "color": "black"
+    }
+  },
+  {
+    "currentShape": {
+      "type": "pencil",
+      "startX": 100,
+      "startY": 100,  
+      "endX": 200,
+      "endY": 200
+    }
+  }
+]
+Ensure that the JSON is valid and properly formatted. Only output the JSON array of shape objects.`;
 
-// 4. Agent setup
 export default async function createDrawingAgent(inputText) {
-  console.log("API Key:", process.env.AZURE_OPENAI_API_KEY?.slice(0, 5), "...");
-  console.log("Endpoint:", process.env.AZURE_OPENAI_ENDPOINT);
-  console.log("Deployment:", process.env.AZURE_OPENAI_DEPLOYMENT_NAME);
-  console.log("Version:", process.env.AZURE_OPENAI_API_VERSION);
+  // Get environment variables
+  const endpoint = "https://aidatameshopenai.openai.azure.com/";
+  const deployment = process.env.DEPLOYMENT_NAME || "gpt-35-turbo-16k";
+  const subscriptionKey = process.env.AZURE_OPENAI_API_KEY;
 
-  const agent = await createReactAgent({
-    llm,
-    tools: [jsonFormatterTool],
-    prompt,
+  // Check if API key is available
+  if (!subscriptionKey || subscriptionKey === "REPLACE_WITH_YOUR_KEY_VALUE_HERE") {
+    throw new Error("Missing AZURE_OPENAI_API_KEY environment variable");
+  }
+
+  console.log("Endpoint:", endpoint);
+  console.log("Deployment:", deployment);
+  console.log("API Key:", subscriptionKey.slice(0, 5), "...");
+
+  // Initialize Azure OpenAI Service client
+  const client = new OpenAI({
+    apiKey: subscriptionKey,
+    baseURL: endpoint,
+    defaultQuery: { "api-version": "2024-05-01-preview" },
+    defaultHeaders: { "api-key": subscriptionKey }
   });
 
-  const executor = AgentExecutor.fromAgentAndTools({
-    agent,
-    tools: [jsonFormatterTool],
-    verbose: true,
-  });
+  try {
+    // Prepare the system message with drawing instructions
+    const messages = [
+      {
+        role: "system",
+        content: `You are an agent that helps convert drawing instructions into shape objects. 
+        You have access to a ShapeFormatter tool that helps you format shape JSON objects.
+        Always think step by step and provide only the final JSON array of shapes as your answer.`
+      },
+      {
+        role: "user",
+        content: `Convert this drawing description into shapes: ${inputText}`
+      },
+      {
+        role: "system",
+        content: `Tool information - ShapeFormatter: ${jsonFormatterResponse}`
+      }
+    ];
 
-  const result = await executor.invoke({
-    input: `Convert this drawing description into shapes: ${inputText}`,
-  });
+    // Generate the completion
+    const completion = await client.chat.completions.create({
+      model: deployment,
+      messages: messages,
+      max_tokens: 800,
+      temperature: 0.3,
+      top_p: 0.95,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      stop: null,
+      stream: false
+    });
 
-  return result.output;
+    console.log("Response received:", completion);
+    
+    // Extract the generated content from the response
+    const responseText = completion.choices[0].message.content;
+    
+    // Try to extract just the JSON part if there's any extra text
+    try {
+      // Find JSON array in the response
+      const jsonMatch = responseText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (jsonMatch) {
+        return jsonMatch[0];
+      }
+      return responseText;
+    } catch (parseError) {
+      console.error("Error parsing response:", parseError);
+      return responseText;
+    }
+  } catch (error) {
+    console.error("Azure OpenAI API error:", error);
+    throw new Error(`Drawing agent error: ${error.message}`);
+  }
 }

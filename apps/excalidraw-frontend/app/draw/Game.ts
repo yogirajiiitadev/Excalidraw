@@ -38,6 +38,7 @@ export class Game {
     private startX = 0;
     private startY = 0;
     private selectedTool = "pencil"; 
+    private setOffLoading: () => void;
 
     private createTextInput(x: number, y: number) {
         const input = document.createElement("input");
@@ -53,11 +54,8 @@ export class Game {
         input.style.padding = "2px";
         document.body.appendChild(input);
         input.focus();
-        console.log("Input element created inside createTextInput: ", input);
 
-        input.addEventListener("keydown", (event) => {
-            console.log("Event key pressed: ", event.key);
-            
+        input.addEventListener("keydown", (event) => {            
             if (event.key === "Enter") {
                 const text = input.value.trim();
                 if (text) {
@@ -91,22 +89,28 @@ export class Game {
     
         this.existingShapes.push(textShape);
         this.clearCanvas();
-        this.socket.send(
-            JSON.stringify({
-                type: "chat",
-                message: JSON.stringify({ currentShape: textShape }),
-                roomId: this.roomId,
-            })
-        );
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(
+                JSON.stringify({
+                    type: "chat",
+                    message: JSON.stringify({ currentShape: textShape }),
+                    roomId: this.roomId,
+                })
+            );
+        }
+        else {
+            console.error("WebSocket is not open. Cannot send text shape.");
+        }
     }
 
-    constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket){ // constructors cant be async!!!
+    constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket, setOffLoading: () => void){ // constructors cant be async!!!
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d")!;
         this.existingShapes = [];
         this.roomId = roomId;
         this.socket = socket;
         this.clicked = false;
+        this.setOffLoading = setOffLoading;
         this.init();
         this.initHandlers();
         this.initMouseHandlers();
@@ -114,12 +118,11 @@ export class Game {
 
     async init(){
         this.existingShapes = await getExistingShapes(this.roomId);
+        this.setOffLoading();
         this.clearCanvas();
-        console.log("Current selected tool: ", this.selectedTool);
     }
 
     setShape(shape: Tool){
-        console.log("Selected Tool: ", shape);
         this.selectedTool = shape;
     }
 
@@ -128,7 +131,6 @@ export class Game {
             const message = JSON.parse(event.data);
             if(message.type === "chat"){
                 const parsedShape = JSON.parse(message.message);
-                console.log("parsedShape: ", parsedShape);
                 this.existingShapes.push(parsedShape.currentShape);
                 this.clearCanvas();
             }
@@ -139,7 +141,6 @@ export class Game {
         this.clicked = true;
         this.startX = e.clientX;
         this.startY = e.clientY;
-        console.log("Current selected tool 2: ", this.selectedTool);
     };
 
     mouseMoveHandler = (e: any) => {
@@ -152,6 +153,15 @@ export class Game {
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.startX,this.startY);
                 this.ctx.lineTo(e.clientX,e.clientY);
+                // arrow head code
+                var headlen = 10;
+                var dx = e.clientX - this.startX;
+                var dy = e.clientY - this.startY;
+                var angle = Math.atan2(dy, dx);
+                this.ctx.lineTo(e.clientX - headlen * Math.cos(angle - Math.PI / 6), e.clientY - headlen * Math.sin(angle - Math.PI / 6));
+                this.ctx.moveTo(e.clientX, e.clientY);
+                this.ctx.lineTo(e.clientX - headlen * Math.cos(angle + Math.PI / 6), e.clientY - headlen * Math.sin(angle + Math.PI / 6));
+                // arrow head code ends
                 this.ctx.stroke();
             }
             else if(this.selectedTool === "circle"){
@@ -209,11 +219,13 @@ export class Game {
 
         this.existingShapes.push(currentShape);
 
-        this.socket.send(JSON.stringify({
-            type: "chat",   
-            message: JSON.stringify({currentShape}),
-            roomId: this.roomId  
-        }));
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({
+                type: "chat",   
+                message: JSON.stringify({currentShape}),
+                roomId: this.roomId  
+            }));
+        }
         this.clearCanvas();
     }
 
@@ -224,7 +236,6 @@ export class Game {
         if (this.selectedTool === "text") {
             this.createTextInput(this.startX, this.startY);
         }
-        console.log("Canvas was double-clicked at:", e.clientX, e.clientY);
     }
 
     destroy(){
@@ -251,7 +262,7 @@ export class Game {
         this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
         this.ctx.fillStyle = "rgba(0, 0, 0)";
         this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
-
+        // Clearing canvas and redrawing existing shapes
         this.existingShapes.map((shape) => {
             if(shape.type === "rect"){
                 this.ctx.strokeStyle = "rgba(255, 255, 255)";
@@ -267,6 +278,15 @@ export class Game {
                 this.ctx.beginPath();
                 this.ctx.moveTo(shape.startX,shape.startY);
                 this.ctx.lineTo(shape.endX,shape.endY);
+                // arrow head code starts
+                var headlen = 10;
+                var dx = shape.endX - shape.startX;
+                var dy = shape.endY - shape.startY;
+                var angle = Math.atan2(dy, dx);
+                this.ctx.lineTo(shape.endX - headlen * Math.cos(angle - Math.PI / 6), shape.endY - headlen * Math.sin(angle - Math.PI / 6));
+                this.ctx.moveTo(shape.endX, shape.endY);
+                this.ctx.lineTo(shape.endX - headlen * Math.cos(angle + Math.PI / 6), shape.endY - headlen * Math.sin(angle + Math.PI / 6));
+                // arrow head code ends
                 this.ctx.stroke();
             }
             else if (shape.type === "text") {

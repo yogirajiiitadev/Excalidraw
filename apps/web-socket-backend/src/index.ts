@@ -81,6 +81,9 @@ wss.on("connection", function connection(ws, request) {
             } catch(e){
                 console.error("Error inserting chat into DB: ", e);
             }
+
+            // this approach is slow because it awaits the process of storing
+            // the message in the database before sending it to all users
             const user = users.find(u => u?.ws === ws);
             if(user){
                 const roomUsers = users.filter(u => u.rooms.includes(roomId));

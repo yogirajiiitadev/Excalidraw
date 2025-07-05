@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { Circle, PencilIcon, RectangleHorizontalIcon, TextIcon } from "lucide-react";
+import { ArrowUpRightIcon, Circle, PencilIcon, RectangleHorizontalIcon, TextIcon } from "lucide-react";
 import { Game } from "@/app/draw/Game";
+import Loading from "./Loading";
 
 type Shape = "circle" | "rect" | "pencil" | "text";
 
@@ -9,6 +10,7 @@ export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [selectedTool, setSelectedTool] = useState<Shape>("pencil");
     const [game, setGame] = useState<Game>();
+    const [reload, setReload] = useState<boolean | undefined>(true);
 
     useEffect(()=>{
         game?.setShape(selectedTool);
@@ -18,7 +20,7 @@ export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
     useEffect(()=>{
         if(canvasRef.current){
             const canvas = canvasRef.current;
-            const g = new Game(canvas, roomId, ws);
+            const g = new Game(canvas, roomId, ws, () => setReload(false));
             setGame(g);
             return () => {
                 g.destroy();
@@ -26,16 +28,20 @@ export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
         }
     },[canvasRef]);
 
+    useEffect(()=>{
+        console.log("Reload status changed: ", reload);
+    },[reload]);
+
     return(
         <div style={{ height: "100vh", overflow: "hidden" }}>
             <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
             <TopBar selectedTool={selectedTool} setSelectedTool={setSelectedTool}/>
+            {reload && <Loading comp="Canvas and fetching existing shapes"/>}
         </div>
     ) 
 }
 
 function TopBar({selectedTool, setSelectedTool}:{selectedTool: Shape, setSelectedTool: (s: Shape) => void}){
-    
     return (
         <div style={{ 
             position: "fixed", 
@@ -51,7 +57,7 @@ function TopBar({selectedTool, setSelectedTool}:{selectedTool: Shape, setSelecte
             borderRadius: "8px"
         }}>
             <div className="flex gap-1">
-                <IconButton activated={selectedTool === "pencil"} icon={<PencilIcon/>} 
+                <IconButton activated={selectedTool === "pencil"} icon={<ArrowUpRightIcon/>} 
                     onClick={()=>{  setSelectedTool("pencil") }} />  
                 <IconButton activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon/>} 
                     onClick={()=>{ setSelectedTool("rect")  }} />  

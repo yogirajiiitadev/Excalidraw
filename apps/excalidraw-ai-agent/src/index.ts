@@ -1,7 +1,7 @@
 // server.js or routes/ai.js
 
 import express from "express";
-import { userAuth } from "./middlewares/userAuth";
+// import { userAuth } from "./middlewares/userAuth";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import jwt from "jsonwebtoken";
 import { CreateUserSchema, CreateSignInSchema, CreateRoomSchema } from "@repo/common/types";
@@ -9,8 +9,8 @@ import { prismaClient } from "@repo/db/client";
 import cors from "cors";
 import { config } from "dotenv";
 // @ts-ignore
-import createDrawingAgent from "./langchain-agent";
-import createDrawingAgent2 from "./langchain-gemini";
+import createDrawingAgent from "./langchain-agent.js";
+// import createDrawingAgent2 from "./langchain-gemini";
 config();
 const app = express();
 app.use(cors());
@@ -23,8 +23,8 @@ app.post("/api/generate-drawing", async (req, res) => {
   console.log("Deployment:", process.env.AZURE_OPENAI_DEPLOYMENT_NAME);
   console.log("Version:", process.env.AZURE_OPENAI_API_VERSION);
   try {
-    // const response = await createDrawingAgent(prompt);
-    const response: any = await createDrawingAgent2(prompt);
+    const response: any = await createDrawingAgent(prompt);
+    // const response: any = await createDrawingAgent2(prompt);
     console.log("Response:", response);
     const parsed = await response
       .replace(/```json\s*/, '')   // remove ```json
@@ -44,7 +44,7 @@ app.post("/api/generate-drawing", async (req, res) => {
     res.json(withMetadata);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to generate shapes" });
+    res.status(500).json({ error: `Failed to generate shapes due to ${err}.` });
   }
 });
 
