@@ -86,7 +86,7 @@ export default function Home() {
                 <Github className="mr-2 h-5 w-5" /> View on GitHub
               </a>
               <button
-                onClick={() => router.push("/genai")}
+                onClick={() => router.push("/canvas/0")}
                 className="flex-1 flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 cursor-pointer transition md:py-4 md:text-lg md:px-10 shadow"
                 style={{ minWidth: 180 }}
               >
