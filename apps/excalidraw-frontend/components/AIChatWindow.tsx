@@ -1,6 +1,26 @@
 "use-client";
+import {useState, useEffect} from "react";
+import { IconButton } from "./IconButton";
+import { ArrowUpRightFromCircle } from "lucide-react";
+import { HTTP_GEN_AI } from "@/config";
+import { postPromptToGenAIBackend } from "@/functions/postPromtToGenAIBackend";
+type chat = {
+    role: "user" | "ai",
+    content: string
+}
+
+
 
 export function AIChatWindow({ onClose }: { onClose: () => void }) {
+    const [messages, setMessages] = useState<chat[]>([
+        {
+            role: "ai",
+            content: "Please enter the instruction to create the required drawing."
+        }
+    ]);
+
+    const [inputValue, setInputValue] = useState("");
+
     return (
         <div style={{
             position: "fixed",
@@ -75,15 +95,47 @@ export function AIChatWindow({ onClose }: { onClose: () => void }) {
                 onMouseOut={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
                 >×</button>
             </div>
-            <div style={{ flex: 1, padding: 20, overflowY: "auto", background: "rgba(245,250,255,0.95)" }}>
-                <p style={{ color: "#5a7fa8", fontWeight: 500, marginBottom: 12 }}>How can I help you with your drawing?</p>
+            <div style={{ flex: 1, flexDirection: "column", padding: 20, overflowY: "auto", background: "rgba(245,250,255,0.95)" }}>
+                <div>
+                    {messages.map((message, index) => (
+                        <div key={index} style={{
+                            marginBottom: 12,
+                            display: "flex",
+                            flexDirection: message.role === "user" ? "row-reverse" : "row",
+                            alignItems: "flex-start"
+                        }}>
+                            <div style={{
+                                maxWidth: "70%",
+                                padding: 10,
+                                borderRadius: 12,
+                                background: message.role === "user" ? "#00bfff" : "rgba(0, 220, 255, 0.4)",
+                                color: message.role === "user" ? "#fff" : "#000",
+                                fontWeight: 500,
+                                boxShadow: "0 2px 8px rgba(0, 191, 255, 0.2)",
+                                wordBreak: "break-word"
+                            }}>
+                                {message.content}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
-            <div style={{ padding: 16, borderTop: "2px inset rgba(0, 191, 255, 0.4)", background: "rgba(255,255,255,0.98)" }}>
+            <div style={{
+                flex: "0 0 auto",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: 16,
+                borderTop: "2px inset rgba(0, 191, 255, 0.4)",
+                background: "rgba(255,255,255,0.98)"
+            }}>
                 <input
                     type="text"
                     placeholder="Type your prompt..."
-                    color="rgba(0, 191, 255, 0.4)"
+                    value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
                     style={{
+                        color: "#000",
                         width: "100%",
                         padding: "10px 12px",
                         borderRadius: "8px",
@@ -91,6 +143,17 @@ export function AIChatWindow({ onClose }: { onClose: () => void }) {
                         fontSize: 15,
                         transition: "border-color 0.2s, box-shadow 0.2s"
                     }}
+                />
+                <IconButton
+                    icon={<ArrowUpRightFromCircle />}
+                    onClick={() => {
+                        if (inputValue.trim() !== "") {
+                            setMessages((prev) => [...prev, { role: "user", content: inputValue }]);
+                            setInputValue("");
+                        }
+                        postPromptToGenAIBackend(inputValue)
+                    }}
+                    activated={!!inputValue.trim()}
                 />
             </div>
         </div>
