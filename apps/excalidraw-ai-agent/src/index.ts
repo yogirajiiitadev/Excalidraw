@@ -2,29 +2,60 @@
 
 import express from "express";
 import { userAuth } from "./middlewares/userAuth";
-import { JWT_SECRET } from "@repo/backend-common/config";
-import jwt from "jsonwebtoken";
-import { CreateUserSchema, CreateSignInSchema, CreateRoomSchema } from "@repo/common/types";
-import { prismaClient } from "@repo/db/client";
 import cors from "cors";
 import { config } from "dotenv";
 // @ts-ignore
-import createDrawingAgent from "./langchain-agent.js";
+import { DrawingBotSession } from "./langchain-agent.js";
+import { createSession, getSession, deleteSession } from "./sessions";
+import { v4 as uuidv4 } from "uuid";
+import { Request, Response } from "express";
+import { ShapeSchema } from "@repo/common/types";
 config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/api/generate-drawing", userAuth, async (req, res) => {
-  const { prompt, userId, roomId } = req.body;
-  try {
-    const response: any = await createDrawingAgent(prompt);
-    res.send(response.data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: `Failed to generate shapes due to ${err}.` });
-  }
+// removed middleware for now.
+app.post("/generate-drawing/init", /*userAuth, */async (req, res) => {
+  const { prompt } = req.body;
+
+  const sessionId = uuidv4();
+  const bot = new DrawingBotSession(prompt);
+  const question = await bot.askNextClarifyingQuestion();
+
+  createSession(sessionId, bot);
+
+  res.json({
+    sessionId,
+    nextQuestion: question, // if null, go to summarize immediately
+  });
 });
+
+// @ts-ignore
+app.post("/generate-drawing/clarify", /*userAuth, */ async (req: Request, res: Response) => {
+  const { sessionId, answer } = req.body;
+  const bot = getSession(sessionId);
+
+  if (!bot) {
+    return res.status(404).json({ error: "Session not found." });
+  }
+
+  bot.recordUserAnswer(answer);
+  let nextQuestion = null;
+  if(bot.questionsAsked < 1) {
+    nextQuestion = await bot.askNextClarifyingQuestion();
+  }
+
+  if (!nextQuestion) {
+    const finalDrawing = await bot.getFinalDrawing();
+    const validatedDrawing = ShapeSchema.safeParse(finalDrawing);
+    deleteSession(sessionId);
+    return res.json({ drawing: validatedDrawing.success ? validatedDrawing.data : "Improper format of drawing returned" });
+  }
+
+  res.json({ nextQuestion });
+});
+
 
 app.listen(3003, () => {
   console.log("AI agent server listening on port 3003");

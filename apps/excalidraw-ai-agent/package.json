@@ -23,7 +23,8 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "langchain": "^0.3.19",
-    "openai": "^4.93.0"
+    "openai": "^4.93.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@repo/backend-common": "workspace:*",

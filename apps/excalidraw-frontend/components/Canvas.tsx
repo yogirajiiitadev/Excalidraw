@@ -4,6 +4,7 @@ import { ArrowUpRightIcon, BrainCircuitIcon, Circle, PencilIcon, RectangleHorizo
 import { Game } from "@/app/draw/Game";
 import Loading from "./Loading";
 import {AIChatWindow} from "./AIChatWindow";
+import { UUID } from "crypto";
 
 type Shape = "circle" | "rect" | "pencil" | "text";
 
@@ -13,7 +14,8 @@ export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
     const [game, setGame] = useState<Game>();
     const [reload, setReload] = useState<boolean | undefined>(true);
     const [showAIChat, setShowAIChat] = useState<boolean>(false);
-
+    const [aiSessionId, setAiSessionId] = useState<string>("");
+    
     useEffect(()=>{
         game?.setShape(selectedTool);
         console.log("Selected Tool changed!!!!!");
@@ -44,7 +46,7 @@ export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
                     console.log("AI button clicked, triggering AI drawing...");
                 }
             }}/>
-            {showAIChat && <AIChatWindow onClose={() => setShowAIChat(false)} />}
+            {showAIChat && <AIChatWindow onClose={() => setShowAIChat(false)} aiSessionId={aiSessionId} setAiSessionId={setAiSessionId} />}
             {reload && <Loading comp="Canvas and fetching existing shapes"/>}
         </div>
     ) 

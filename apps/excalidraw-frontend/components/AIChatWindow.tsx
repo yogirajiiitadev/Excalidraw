@@ -1,8 +1,7 @@
 "use-client";
-import {useState, useEffect} from "react";
+import {useState, useEffect, SetStateAction} from "react";
 import { IconButton } from "./IconButton";
 import { ArrowUpRightFromCircle } from "lucide-react";
-import { HTTP_GEN_AI } from "@/config";
 import { postPromptToGenAIBackend } from "@/functions/postPromtToGenAIBackend";
 type chat = {
     role: "user" | "ai",
@@ -11,7 +10,8 @@ type chat = {
 
 
 
-export function AIChatWindow({ onClose }: { onClose: () => void }) {
+export function AIChatWindow(
+    { onClose, aiSessionId, setAiSessionId }: { onClose: () => void, aiSessionId: string, setAiSessionId: any }) {
     const [messages, setMessages] = useState<chat[]>([
         {
             role: "ai",
@@ -20,7 +20,7 @@ export function AIChatWindow({ onClose }: { onClose: () => void }) {
     ]);
 
     const [inputValue, setInputValue] = useState("");
-
+    
     return (
         <div style={{
             position: "fixed",
@@ -146,12 +146,20 @@ export function AIChatWindow({ onClose }: { onClose: () => void }) {
                 />
                 <IconButton
                     icon={<ArrowUpRightFromCircle />}
-                    onClick={() => {
+                    onClick={async () => {
                         if (inputValue.trim() !== "") {
                             setMessages((prev) => [...prev, { role: "user", content: inputValue }]);
-                            setInputValue("");
                         }
-                        postPromptToGenAIBackend(inputValue)
+                        const isInitialPrompt = (messages.length <= 2) ? true : false;
+                        const prompt = inputValue;
+                        setInputValue("");
+                        const aiResponse = await postPromptToGenAIBackend(prompt, isInitialPrompt, aiSessionId, setAiSessionId)
+                        setMessages((prev) => [
+                            ...prev, {
+                                role: "ai",
+                                content: aiResponse
+                            }
+                        ]);
                     }}
                     activated={!!inputValue.trim()}
                 />
