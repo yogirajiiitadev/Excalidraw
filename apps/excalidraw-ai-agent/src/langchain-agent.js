@@ -20,6 +20,7 @@ const summaryPrompt = ChatPromptTemplate.fromMessages([
     Generate an extensive drawing based on the user's answers to the questions asked and initial prompt.
     Use all possible components. You can use all the shapes and each shape any number of times.
     Note that the drawing should contain atleast 10 shapes and at max 50 shapes.
+    Also note that the text color should be white by default.
     Also the co-ordinates of the drawing should be such that they can be drawn on fixed sized HTML canvas window.`],
   new MessagesPlaceholder("chat_history"),
   ["human", "{format_instructions}"]

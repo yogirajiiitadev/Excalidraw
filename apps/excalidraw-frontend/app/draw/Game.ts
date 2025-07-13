@@ -1,6 +1,7 @@
+import { Shapes } from "lucide-react";
 import { getExistingShapes } from "./httpCalls";
 
-type Shape = {
+export type Shape = {
     type: "rect";
     x: number;
     y: number;
@@ -32,6 +33,7 @@ export class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private existingShapes: Shape[];
+    private genAiShapes: Shape[] | null = [];
     private roomId: string;
     private socket: WebSocket;
     private clicked: boolean;
@@ -88,7 +90,7 @@ export class Game {
         };
     
         this.existingShapes.push(textShape);
-        this.clearCanvas();
+        this.clearCanvas(false);
         if (this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(
                 JSON.stringify({
@@ -119,11 +121,16 @@ export class Game {
     async init(){
         this.existingShapes = await getExistingShapes(this.roomId);
         this.setOffLoading();
-        this.clearCanvas();
+        this.clearCanvas(false);
     }
 
     setShape(shape: Tool){
         this.selectedTool = shape;
+    }
+
+    setGenAiShapes(shapes: Shape[] | null){
+        this.genAiShapes = shapes;
+        console.log("Drawing received from Gen AI 2: ", this.genAiShapes);
     }
 
     initHandlers(){
@@ -132,7 +139,7 @@ export class Game {
             if(message.type === "chat"){
                 const parsedShape = JSON.parse(message.message);
                 this.existingShapes.push(parsedShape.currentShape);
-                this.clearCanvas();
+                this.clearCanvas(false);
             }
         }
     }
@@ -147,7 +154,7 @@ export class Game {
         if(this.clicked){
             const width = e.clientX - this.startX;
             const height = e.clientY - this.startY;
-            this.clearCanvas();
+            this.clearCanvas(false);
             
             if(this.selectedTool === "pencil"){
                 this.ctx.beginPath();
@@ -226,7 +233,7 @@ export class Game {
                 roomId: this.roomId  
             }));
         }
-        this.clearCanvas();
+        this.clearCanvas(false);
     }
 
     mouseDoubleClickHandler = (e: any) => {
@@ -258,12 +265,29 @@ export class Game {
         this.canvas.addEventListener("dblclick",this.mouseDoubleClickHandler);
     }
 
-    clearCanvas(){
+    acceptGenAiDrawing(){
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.genAiShapes?.map((genAiShape: Shape) => {
+                    this.socket.send(JSON.stringify({
+                    type: "chat",   
+                    message: JSON.stringify({genAiShape}),
+                    roomId: this.roomId  
+                }));
+            })
+        }
+        this.genAiShapes?.map((genAiShape: Shape) => {
+            this.existingShapes.push(genAiShape);
+        });
+        this.clearCanvas(false);
+    }
+
+    clearCanvas(isGenAi: boolean){
         this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
         this.ctx.fillStyle = "rgba(0, 0, 0)";
         this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
         // Clearing canvas and redrawing existing shapes
-        this.existingShapes.map((shape) => {
+        const iteratingShapes = isGenAi ? this.genAiShapes : this.existingShapes;
+        iteratingShapes?.map((shape) => {
             if(shape.type === "rect"){
                 this.ctx.strokeStyle = "rgba(255, 255, 255)";
                 this.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);

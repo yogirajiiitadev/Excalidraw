@@ -3,22 +3,12 @@ import {useState, useEffect, SetStateAction} from "react";
 import { IconButton } from "./IconButton";
 import { ArrowUpRightFromCircle } from "lucide-react";
 import { postPromptToGenAIBackend } from "@/functions/postPromtToGenAIBackend";
-type chat = {
-    role: "user" | "ai",
-    content: string
-}
+import { chat } from "./Canvas";
 
 
 
 export function AIChatWindow(
-    { onClose, aiSessionId, setAiSessionId }: { onClose: () => void, aiSessionId: string, setAiSessionId: any }) {
-    const [messages, setMessages] = useState<chat[]>([
-        {
-            role: "ai",
-            content: "Please enter the instruction to create the required drawing."
-        }
-    ]);
-
+    { setDrawingMessage, messages, setMessages, onClose, aiSessionId, setAiSessionId }: { setDrawingMessage: any, messages: chat[], setMessages: any, onClose: () => void, aiSessionId: string, setAiSessionId: any }) {
     const [inputValue, setInputValue] = useState("");
     
     return (
@@ -148,18 +138,34 @@ export function AIChatWindow(
                     icon={<ArrowUpRightFromCircle />}
                     onClick={async () => {
                         if (inputValue.trim() !== "") {
-                            setMessages((prev) => [...prev, { role: "user", content: inputValue }]);
+                            setMessages((prev: chat[]) => [...prev, { role: "user", content: inputValue }]);
                         }
                         const isInitialPrompt = (messages.length <= 2) ? true : false;
                         const prompt = inputValue;
                         setInputValue("");
-                        const aiResponse = await postPromptToGenAIBackend(prompt, isInitialPrompt, aiSessionId, setAiSessionId)
-                        setMessages((prev) => [
-                            ...prev, {
-                                role: "ai",
-                                content: aiResponse
-                            }
-                        ]);
+                        const aiResponse = await postPromptToGenAIBackend(prompt, isInitialPrompt, aiSessionId, setAiSessionId);
+                        let aiResponseParsed;
+                        try{
+                            aiResponseParsed = JSON.parse(aiResponse);
+                        } catch(e){
+                            aiResponseParsed = aiResponse;
+                        }
+
+                        if(Array.isArray(aiResponseParsed)){
+                            console.log("check1");
+                            setDrawingMessage(aiResponseParsed);
+                        }
+                        else{
+                            console.log("check2");
+                            setMessages((prev: chat[]) => [
+                                ...prev, {
+                                    role: "ai",
+                                    content: typeof aiResponseParsed === "string"
+                                            ? aiResponseParsed
+                                            : JSON.stringify(aiResponseParsed)
+                                }
+                            ]);
+                        }
                     }}
                     activated={!!inputValue.trim()}
                 />
