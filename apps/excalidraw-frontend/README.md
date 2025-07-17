@@ -1,12 +1,14 @@
 # Features to be implemented:
-1) Create Agent backend (with agent asking 3 counter questions in addition to user prompt).
-2) Integrate AI agent backend API in AIChatWindow and render the AIMessage and Human message properly.
-3) Capture Avatar of User in backend User table after sign up, Store the User Info in User slice after creating a Redux store.
-4) Show all current connected/ active users on rooms card with the help of respective registered avatars.
-5) Show all live activity of connected users on the canvas via color separated shapes. With one color assigned to each avatar and show a legend which maps color to Avatar.
-6) Instead of adding drawing on top of existing drawing. Remove the initial human generated shapes and only add new AI generated shapes on canvas.
-7) Give the option to the user to pass on the current drawing as the context to the ChatBot conversation and build the drawing on top of that.
-8) Update the loader component to something more fancy. Also, update the loader in chatbot while the further message is being fetched and drawing is being generated.
+- [x] Create Agent backend (with agent asking 3 counter questions in addition to user prompt).
+- [x] Integrate AI agent backend API in AIChatWindow and render the AIMessage and Human message properly.
+- [ ] Capture Avatar of User in backend User table after sign up, Store the User Info in User slice after creating a Redux store.
+- [ ] Show all current connected/ active users on rooms card with the help of respective registered avatars.
+- [ ] Show all live activity of connected users on the canvas via color separated shapes. With one color assigned to each avatar and show a legend which maps color to Avatar.
+- [ ] Instead of adding drawing on top of existing drawing. Remove the initial human generated shapes and only add new AI generated shapes on canvas.
+- [ ] Give the option to the user to pass on the current drawing as the context to the ChatBot conversation and build the drawing on top of that.
+- [ ] Update the loader component to something more fancy. Also, update the loader in chatbot while the further message is being fetched and drawing is being generated.
+- [ ] Create a 'Delete' shape. This draws a dotted quadrilateral. Checks and enlists all the existing shapes that fall in this internal area of quadrilateral. Finally removes all of them. Need to add a new endpoint in web-socket backend to delete the shape.
+- [ ] Enhance the UI and make color theme consistent in Canvas and Landing page.
 
 
 
