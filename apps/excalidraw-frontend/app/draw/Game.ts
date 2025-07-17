@@ -90,7 +90,7 @@ export class Game {
         };
     
         this.existingShapes.push(textShape);
-        this.clearCanvas(false);
+        this.clearCanvas(2);
         if (this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(
                 JSON.stringify({
@@ -120,8 +120,9 @@ export class Game {
 
     async init(){
         this.existingShapes = await getExistingShapes(this.roomId);
+        console.log("Existing shapes fetched: ", this.existingShapes);
         this.setOffLoading();
-        this.clearCanvas(false);
+        this.clearCanvas(2);
     }
 
     setShape(shape: Tool){
@@ -136,10 +137,10 @@ export class Game {
     initHandlers(){
         this.socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            if(message.type === "chat"){
+            if(message?.type === "chat"){
                 const parsedShape = JSON.parse(message.message);
                 this.existingShapes.push(parsedShape.currentShape);
-                this.clearCanvas(false);
+                this.clearCanvas(2);
             }
         }
     }
@@ -154,7 +155,7 @@ export class Game {
         if(this.clicked){
             const width = e.clientX - this.startX;
             const height = e.clientY - this.startY;
-            this.clearCanvas(false);
+            this.clearCanvas(2);
             
             if(this.selectedTool === "pencil"){
                 this.ctx.beginPath();
@@ -233,7 +234,7 @@ export class Game {
                 roomId: this.roomId  
             }));
         }
-        this.clearCanvas(false);
+        this.clearCanvas(2);
     }
 
     mouseDoubleClickHandler = (e: any) => {
@@ -275,30 +276,34 @@ export class Game {
                 }));
             })
         }
-        this.genAiShapes?.map((genAiShape: Shape) => {
-            this.existingShapes.push(genAiShape);
-        });
-        this.clearCanvas(false);
+        this.clearCanvas(2);
     }
 
-    clearCanvas(isGenAi: boolean){
+    // renderFlag - 0 => render GenAi only
+    // renderFlag - 1 => render Existing only
+    // renderFlag - 2 => render GenAi and Existing
+    clearCanvas(renderFlag: number){
+        console.log("Clearing canvas with renderFlag: ", renderFlag);
         this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
         this.ctx.fillStyle = "rgba(0, 0, 0)";
         this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+        console.log("this.existingShapes: ", this.existingShapes);
+        console.log("this.genAiShapes: ", this.genAiShapes);
         // Clearing canvas and redrawing existing shapes
-        const iteratingShapes = isGenAi ? this.genAiShapes : this.existingShapes;
+
+        const iteratingShapes = (renderFlag === 0) ? this.genAiShapes : (renderFlag === 1) ? this.existingShapes : [...(this.existingShapes || []), ...(this.genAiShapes || [])];
         iteratingShapes?.map((shape) => {
-            if(shape.type === "rect"){
+            if(shape?.type === "rect"){
                 this.ctx.strokeStyle = "rgba(255, 255, 255)";
                 this.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
             }
-            else if(shape.type === "circle"){
+            else if(shape?.type === "circle"){
                 this.ctx.beginPath();
                 this.ctx.arc(shape.centerX,shape.centerY,Math.abs(shape.radius),0,2*Math.PI);
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
-            else if(shape.type === "pencil"){
+            else if(shape?.type === "pencil"){
                 this.ctx.beginPath();
                 this.ctx.moveTo(shape.startX,shape.startY);
                 this.ctx.lineTo(shape.endX,shape.endY);
@@ -313,7 +318,7 @@ export class Game {
                 // arrow head code ends
                 this.ctx.stroke();
             }
-            else if (shape.type === "text") {
+            else if (shape?.type === "text") {
                 this.ctx.font = shape.font || "16px Arial";  
                 this.ctx.fillStyle = shape.color || "white";
                 this.ctx.fillText(shape.inputText, shape.startX, shape.startY);

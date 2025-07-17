@@ -7,7 +7,7 @@ export async function getExistingShapes(roomId: string){
     console.log("messages received from the backend: ", messages);
     const shapes = messages.map((x: {message: any}) => {
         const parsedMessage = JSON.parse(x.message);
-        return parsedMessage.currentShape;
+        return parsedMessage.currentShape ?? parsedMessage.genAiShape;
     });
     return shapes;
 }

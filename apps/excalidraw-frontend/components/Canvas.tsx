@@ -33,8 +33,8 @@ export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
     useEffect(() => {
         game?.setGenAiShapes(drawingMessage);
         console.log("Drawing received from Gen AI 1: ", drawingMessage);
-        game?.clearCanvas(true);
-    },[drawingMessage, game])
+        game?.clearCanvas(0);
+    },[drawingMessage])
 
     useEffect(()=>{
         game?.setShape(selectedTool);
@@ -102,7 +102,7 @@ function VerdictPanel({setDrawingMessages, setMessages, game}: {setDrawingMessag
                         </div>
                     }
                     onClick={()=>{ 
-                        game?.clearCanvas(false);
+                        game?.clearCanvas(1);
                         setDrawingMessages(null);
                         setMessages(initialSystemMessage);
                     }} />

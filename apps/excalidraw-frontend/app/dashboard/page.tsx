@@ -37,37 +37,40 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div className="min-h-screen bg-gray-50 py-5 px-3 sm:px-6 pb-20">
-        <nav className="bg-white shadow-md py-4 px-6 rounded-lg flex items-center justify-between">
-          <div className="flex items-center">
-            <Shapes className="h-12 w-12 text-blue-600" />
-            <span className="ml-2 text-3xl font-semibold text-gray-900">Scriblio Dashboard</span>
+      <div className="min-h-screen bg-gradient-to-br from-[rgba(58,178,218,0.95)] via-white to-[rgba(28,82,100,0.95)] py-5 px-3 sm:px-6 pb-20">
+        <nav className="bg-white/90 shadow-lg py-4 px-8 rounded-2xl flex items-center justify-between mb-8 border border-[rgba(33,59,68,0.12)] backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <Shapes className="h-14 w-14 text-[rgba(48,148,182,0.95)] drop-shadow-lg" />
+            <span className="ml-2 text-3xl font-extrabold text-gray-900 tracking-tight">Scriblio <span className='text-[rgba(48,148,182,0.95)]'>Dashboard</span></span>
           </div>
         </nav>
-        <div className="px-8">
-          <div className="flex justify-between items-center mt-6">
+        <div className="px-0 sm:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
               <div className="mt-8 px-5">
-                  <h2 className="text-2xl font-bold text-gray-900">Your Rooms</h2>
-                  <p className="text-gray-600 mt-2">Manage and access all your collaborative rooms.</p>
+                  <h2 className="text-3xl font-bold text-white">Your Rooms</h2>
+                  <p className="text-xl text-white mt-2">Manage and access all your collaborative rooms.</p>
               </div>
-              <div>
-              <button
+              <div className="flex flex-col items-end gap-2">
+                <button
                   onClick={() => {
                       setIsCreateRoomModalOpen(true);
                       setErr(false);
                       console.log("Create room triggered!!")}}
-                  className="cursor-pointer p-3 mt-4 w-full bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="cursor-pointer px-6 py-3 bg-[rgba(48,148,182,0.95)] text-white font-semibold text-lg rounded-xl shadow-lg hover:bg-[rgba(48,148,182,1)] transition border-2 border-[rgba(48,148,182,0.15)] focus:outline-none focus:ring-2 focus:ring-[rgba(48,148,182,0.4)]"
                   >
                   + Create Room
-              </button>
+                </button>
               </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {rooms.length > 0 ? (
               rooms.map((room: any) => <RoomCard roomDetails={room} key={room.id} />)
               ) : (
-              <p className="text-gray-500 text-center col-span-full">No rooms available.</p>
+              <div className="col-span-full flex flex-col items-center justify-center py-16">
+                <Shapes className="h-16 w-16 text-[rgba(48,148,182,0.15)] mb-4" />
+                <p className="text-gray-400 text-lg font-medium">No rooms available. Create your first room!</p>
+              </div>
               )}
           </div>
         </div>
@@ -104,7 +107,6 @@ const Dashboard = () => {
             </div>
         </Modal>
         </div>
-        <CommonFooter />
         {loading && <Loading comp="Dashboard" />}
       </div>
   );
