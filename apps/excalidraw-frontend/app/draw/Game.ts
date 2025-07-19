@@ -25,9 +25,15 @@ export type Shape = {
     font: string;
     color: string;
     inputText: string;
+} | {
+    type: "delete";
+    x: number;
+    y: number;
+    width: number;  
+    height: number;
 };
 
-type Tool = "rect" | "circle" | "pencil" | "text";
+type Tool = "rect" | "circle" | "pencil" | "text" | "delete";
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -156,7 +162,7 @@ export class Game {
             const width = e.clientX - this.startX;
             const height = e.clientY - this.startY;
             this.clearCanvas(2);
-            
+            this.ctx.save(); 
             if(this.selectedTool === "pencil"){
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.startX,this.startY);
@@ -185,10 +191,16 @@ export class Game {
                 this.ctx.strokeStyle = "rgba(255, 255, 255)";
                 this.ctx.strokeRect(this.startX,this.startY,width,height);
             }
+            else if(this.selectedTool === "delete"){
+                this.ctx.setLineDash([5,5]);
+                this.ctx.strokeStyle = "rgba(255, 255, 255)";
+                this.ctx.strokeRect(this.startX,this.startY,width,height);
+            }
+            this.ctx.restore();
         }
     }
 
-    mouseUpHandler = (e: any) => {
+    mouseUpHandler = async(e: any) => {
         this.clicked = false;
         const width = e.clientX - this.startX;
         const height = e.clientY - this.startY;
@@ -220,12 +232,19 @@ export class Game {
                 endY: height + this.startY
             };
         }
+        else if(this.selectedTool === "delete"){
+            currentShape = {
+                type: this.selectedTool,
+                x: this.startX,
+                y: this.startY,
+                width,
+                height
+            };
+        }
 
         if(!currentShape){
             return;
         }
-
-        this.existingShapes.push(currentShape);
 
         if (this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify({
@@ -233,6 +252,14 @@ export class Game {
                 message: JSON.stringify({currentShape}),
                 roomId: this.roomId  
             }));
+        }
+
+        if(this.selectedTool === "delete"){
+            this.existingShapes = await getExistingShapes(this.roomId);
+            console.log("this.existingShapes after deletion: ", this.existingShapes);
+        }
+        else{
+            this.existingShapes.push(currentShape);
         }
         this.clearCanvas(2);
     }

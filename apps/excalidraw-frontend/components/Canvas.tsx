@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { ArrowUpRightIcon, BrainCircuitIcon, Check, Circle, CrossIcon, PencilIcon, RectangleHorizontalIcon, TextIcon, X } from "lucide-react";
+import { ArrowUpRightIcon, BrainCircuitIcon, Check, Circle, CrossIcon, DeleteIcon, LucideDelete, PencilIcon, RectangleHorizontalIcon, TextIcon, X } from "lucide-react";
 import { Game } from "@/app/draw/Game";
 import Loading from "./Loading";
 import {AIChatWindow} from "./AIChatWindow";
-import { UUID } from "crypto";
 import { Shape as ShapeType } from "@/app/draw/Game";
 
-type Shape = "circle" | "rect" | "pencil" | "text";
+type Shape = "circle" | "rect" | "pencil" | "text" | "delete";
 export type chat = {
     role: "user" | "ai",
     content: string
@@ -135,6 +134,8 @@ function TopBar({selectedTool, setSelectedTool}:{selectedTool: Shape, setSelecte
                     onClick={()=>{ setSelectedTool("circle")  }} />
                 <IconButton activated={selectedTool === "text"} icon={ <TextIcon/> }
                     onClick={()=>{ setSelectedTool("text")  }} />
+                <IconButton activated={selectedTool === "delete"} icon={ <LucideDelete/> }
+                    onClick={()=>{ setSelectedTool("delete")  }} />
             </div>
         </div>
     )

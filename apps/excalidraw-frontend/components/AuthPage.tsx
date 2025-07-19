@@ -57,11 +57,8 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
         <button
           onClick={async () => {
             errorMessage = await handleAuth(email, password, isSignin, setErr, name)
-            console.log("error message: ", errorMessage);
             setErrDisplay(errorMessage.msg);
-            // router.push("/dashboard");
             if (errorMessage.success) {
-              console.log("hello after success");
               router.push("/dashboard");
             }
           }}

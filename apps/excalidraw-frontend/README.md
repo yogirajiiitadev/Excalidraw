@@ -17,3 +17,4 @@
 1) During creation of GEN AI node. We hit the gen-ai api once and the gen-ai function is suppose to ask some clarifying questions on the initial prompt. However, for user to answer the clarifying questions there is no other API. It has to hit the same API, makes it difficult to mantain the contect of the conversation.
 So on initial prompt, a session ID is associated the bot assigned to user in Map 
 <sessionid> -> <bot>. bot is the instance of DrawingBotSession class which holds the context of conversation in its chatHistory variable and has utility methods like askNextClarifyingQuestion() and getFinalDrawing().
+2) Bug: Each shape when drawn is rendered twice on the Canvas on top of previous one. When we try to delete any shape, the first layer is removed but second layer persisits. Need to delete both layer in the first go. 
