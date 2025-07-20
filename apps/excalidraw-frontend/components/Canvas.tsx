@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { ArrowUpRightIcon, BrainCircuitIcon, Check, Circle, CrossIcon, DeleteIcon, LucideDelete, PencilIcon, RectangleHorizontalIcon, TextIcon, X } from "lucide-react";
+import { ArrowUpRightIcon, BrainCircuitIcon, Check, Circle, CrossIcon, DeleteIcon, DownloadIcon, LucideDelete, PencilIcon, RectangleHorizontalIcon, TextIcon, X } from "lucide-react";
 import { Game } from "@/app/draw/Game";
 import Loading from "./Loading";
 import {AIChatWindow} from "./AIChatWindow";
@@ -50,10 +50,28 @@ export function Canvas({roomId, ws}:{roomId: string, ws: WebSocket}){
         }
     },[canvasRef]);
 
+    const downloadCanvasInJPG = () => {
+        let canvasImage: any = canvasRef.current?.toDataURL('image/png');
+        // this can be used to download any image from webpage to local disk
+        let xhr = new XMLHttpRequest();
+        xhr.responseType = 'blob';
+        xhr.onload = function () {
+            let a = document.createElement('a');
+            a.href = window.URL.createObjectURL(xhr.response);
+            a.download = 'canvas.png';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        };
+        xhr.open('GET', canvasImage); // This is to download the canvas Image
+        xhr.send();
+    }
+
     return(
         <div style={{ height: "100vh", overflow: "hidden" }}>
             <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
-            <TopBar selectedTool={selectedTool} setSelectedTool={setSelectedTool}/>
+            <TopBar selectedTool={selectedTool} setSelectedTool={setSelectedTool} downloadCanvasInJPG = {() => downloadCanvasInJPG()}/>
             <AIbutton onClick={() => {
                 setShowAIChat((prev) => !prev);
                 if(game) {
@@ -110,7 +128,7 @@ function VerdictPanel({setDrawingMessages, setMessages, game}: {setDrawingMessag
     )
 }
 
-function TopBar({selectedTool, setSelectedTool}:{selectedTool: Shape, setSelectedTool: (s: Shape) => void}){
+function TopBar({selectedTool, setSelectedTool, downloadCanvasInJPG}:{selectedTool: Shape, setSelectedTool: (s: Shape) => void, downloadCanvasInJPG: any}){
     return (
         <div style={{ 
             position: "fixed", 
@@ -136,6 +154,8 @@ function TopBar({selectedTool, setSelectedTool}:{selectedTool: Shape, setSelecte
                     onClick={()=>{ setSelectedTool("text")  }} />
                 <IconButton activated={selectedTool === "delete"} icon={ <LucideDelete/> }
                     onClick={()=>{ setSelectedTool("delete")  }} />
+                <IconButton activated={false} icon={ <DownloadIcon/> }
+                    onClick={()=>{ downloadCanvasInJPG()  }} />
             </div>
         </div>
     )

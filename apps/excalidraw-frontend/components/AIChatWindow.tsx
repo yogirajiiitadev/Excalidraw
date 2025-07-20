@@ -10,7 +10,10 @@ import { chat } from "./Canvas";
 export function AIChatWindow(
     { setDrawingMessage, messages, setMessages, onClose, aiSessionId, setAiSessionId }: { setDrawingMessage: any, messages: chat[], setMessages: any, onClose: () => void, aiSessionId: string, setAiSessionId: any }) {
     const [inputValue, setInputValue] = useState("");
+    const [aiChatLoading, setAiChatLoading] = useState<boolean>(false);
     
+    useEffect(() => console.log("aiChatLoading changed: ", aiChatLoading), [aiChatLoading]);
+
     return (
         <div style={{
             position: "fixed",
@@ -108,6 +111,48 @@ export function AIChatWindow(
                             </div>
                         </div>
                     ))}
+                    {aiChatLoading && (
+                        <div style={{
+                            marginBottom: 12,
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "flex-start"
+                        }}>
+                        <style>{`
+                                @keyframes blink {
+                                0%, 80%, 100% { opacity: 0; }
+                                40% { opacity: 1; }
+                                }
+                            `}
+                        </style>
+                            <div style={{
+                            maxWidth: "70%",
+                            padding: 10,
+                            borderRadius: 12,
+                            background: "rgba(0, 220, 255, 0.3)",
+                            color: "#000",
+                            fontWeight: 500,
+                            boxShadow: "0 2px 8px rgba(0, 191, 255, 0.2)",
+                            fontStyle: "italic"
+                            }}>
+                                <div style={{ display: "flex", gap: 4 }}>
+                                    {[0, 0.2, 0.4].map((delay, index) => (
+                                    <span
+                                        key={index}
+                                        style={{
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: "50%",
+                                        background: "#00bfff",
+                                        animation: "blink 1.4s infinite ease-in-out",
+                                        animationDelay: `${delay}s`
+                                        }}
+                                    />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
             <div style={{
@@ -140,6 +185,7 @@ export function AIChatWindow(
                         if (inputValue.trim() !== "") {
                             setMessages((prev: chat[]) => [...prev, { role: "user", content: inputValue }]);
                         }
+                        setAiChatLoading(true);
                         const isInitialPrompt = (messages.length <= 2) ? true : false;
                         const prompt = inputValue;
                         setInputValue("");
@@ -150,7 +196,7 @@ export function AIChatWindow(
                         } catch(e){
                             aiResponseParsed = aiResponse;
                         }
-
+                        setAiChatLoading(false);
                         if(Array.isArray(aiResponseParsed)){
                             console.log("check1");
                             setDrawingMessage(aiResponseParsed);
@@ -168,6 +214,7 @@ export function AIChatWindow(
                         }
                     }}
                     activated={!!inputValue.trim()}
+                    disabled={aiChatLoading}
                 />
             </div>
         </div>

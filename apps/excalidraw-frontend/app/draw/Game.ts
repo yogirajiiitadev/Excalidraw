@@ -253,6 +253,8 @@ export class Game {
                 roomId: this.roomId  
             }));
         }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         if(this.selectedTool === "delete"){
             this.existingShapes = await getExistingShapes(this.roomId);

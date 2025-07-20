@@ -22,7 +22,7 @@ const RoomCard = ({ roomDetails }: { roomDetails: any }) => {
             e.stopPropagation();
             router.push(`/canvas/${roomDetails.id}`);
           }}
-          className="mt-6 w-full bg-white/90 text-[rgba(48,148,182,0.95)] font-semibold py-2 rounded-lg shadow hover:bg-white transition text-lg tracking-wide border border-white/60 hover:border-[rgba(48,148,182,0.95)] focus:outline-none focus:ring-2 focus:ring-white"
+          className="cursor-pointer mt-6 w-full bg-white/90 text-[rgba(48,148,182,0.95)] font-semibold py-2 rounded-lg shadow hover:bg-white transition text-lg tracking-wide border border-white/60 hover:border-[rgba(48,148,182,0.95)] focus:outline-none focus:ring-2 focus:ring-white"
         >
           Join Room
         </button>

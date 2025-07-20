@@ -91,6 +91,9 @@ const Dashboard = () => {
               await handleCreateRoomSubmit({roomName, roomDescription, setErr, setErrDisplay, setRooms, setLoading, setIsCreateRoomModalOpen});
               console.log("Error boolean fetched : ", err);
             }}
+            okButtonProps={{
+              style: { backgroundColor: "rgba(0,120,160,0.95)", borderColor: "#1677ff", color: "white" }, 
+            }}
             onCancel={() => {
               setIsCreateRoomModalOpen(false);
               setErr(false);

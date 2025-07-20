@@ -21,7 +21,8 @@ const summaryPrompt = ChatPromptTemplate.fromMessages([
     Use all possible components. You can use all the shapes and each shape any number of times.
     Note that the drawing should contain atleast 10 shapes and at max 50 shapes.
     Also note that the text color should be white by default.
-    Also the co-ordinates of the drawing should be such that they can be drawn on fixed sized HTML canvas window.`],
+    Also the co-ordinates of the drawing should be such that they can be drawn on fixed sized HTML canvas window.
+    Make sure that the shapes are rendered in the center of window.`],
   new MessagesPlaceholder("chat_history"),
   ["human", "{format_instructions}"]
 ]);
