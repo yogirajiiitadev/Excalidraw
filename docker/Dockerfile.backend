@@ -1,0 +1,22 @@
+FROM node:20-alpine AS deps
+RUN npm install -g pnpm
+WORKDIR /app
+
+# Copy root-level files
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+
+# Copy full source (so prisma/schema.prisma exists)
+COPY packages ./packages
+COPY apps/http-backend ./apps/http-backend
+
+# Install all dependencies
+RUN pnpm install
+
+# Explicitly generate Prisma client in @repo/db
+RUN cd packages/db && pnpm prisma generate
+
+EXPOSE 3001
+WORKDIR /app/apps/http-backend
+CMD ["pnpm", "run", "dev"]
+
+# docker build -t http-backend -f docker/Dockerfile.backend .
