@@ -20,3 +20,4 @@ WORKDIR /app/apps/http-backend
 CMD ["pnpm", "run", "dev"]
 
 # docker build -t http-backend -f docker/Dockerfile.backend .
+# docker run -p 3001:3001 http-backend
