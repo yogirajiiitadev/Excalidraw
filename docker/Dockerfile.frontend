@@ -1,0 +1,23 @@
+FROM node:20-alpine AS deps
+RUN npm install -g pnpm
+WORKDIR /app
+
+# Copy root-level files
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+
+# Copy full source (so prisma/schema.prisma exists)
+COPY packages ./packages
+COPY apps/excalidraw-frontend ./apps/excalidraw-frontend
+
+# Install all dependencies
+RUN pnpm install
+
+# Explicitly generate Prisma client in @repo/db
+RUN cd packages/db && pnpm prisma generate
+
+EXPOSE 3000
+WORKDIR /app/apps/excalidraw-frontend
+CMD ["pnpm", "run", "dev", "--", "-H", "0.0.0.0"]
+
+# docker build -t excalidraw-frontend -f docker/Dockerfile.agent .
+# docker run -p 3000:3000 excalidraw-frontend

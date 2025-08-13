@@ -1,0 +1,23 @@
+FROM node:20-alpine AS deps
+RUN npm install -g pnpm
+WORKDIR /app
+
+# Copy root-level files
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
+
+# Copy full source (so prisma/schema.prisma exists)
+COPY packages ./packages
+COPY apps/excalidraw-ai-agent ./apps/excalidraw-ai-agent
+
+# Install all dependencies
+RUN pnpm install
+
+# Explicitly generate Prisma client in @repo/db
+RUN cd packages/db && pnpm prisma generate
+
+EXPOSE 3003
+WORKDIR /app/apps/excalidraw-ai-agent
+CMD ["pnpm", "run", "dev"]
+
+# docker build -t excalidraw-ai-agent -f docker/Dockerfile.agent .
+# docker run -p 3003:3003 excalidraw-ai-agent
