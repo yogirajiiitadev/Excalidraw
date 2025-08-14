@@ -8,6 +8,7 @@ COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
 # Copy full source (so prisma/schema.prisma exists)
 COPY packages ./packages
 COPY apps/excalidraw-frontend ./apps/excalidraw-frontend
+COPY ./turbo.json ./turbo.json
 
 # Install all dependencies
 RUN pnpm install
@@ -16,8 +17,9 @@ RUN pnpm install
 RUN cd packages/db && pnpm prisma generate
 
 EXPOSE 3000
-WORKDIR /app/apps/excalidraw-frontend
-CMD ["pnpm", "run", "dev", "--", "-H", "0.0.0.0"]
 
-# docker build -t excalidraw-frontend -f docker/Dockerfile.agent .
+WORKDIR /app/apps/excalidraw-frontend
+CMD ["pnpm", "run", "dev", "-H", "0.0.0.0"]
+
+# docker build -t excalidraw-frontend -f docker/Dockerfile.frontend .
 # docker run -p 3000:3000 excalidraw-frontend
