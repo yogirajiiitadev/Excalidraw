@@ -30,3 +30,11 @@ jobs:
           file: ./docker/Dockerfile.backend
           push: true
           tags: ypc2002/scriblio-backend:${{ github.sha }}
+
+      # SSH into VM and pull/run the docker container
+      - name: Deploy to the VM
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          chmod 700 /home/runner/ssh_key
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key ec2-user@13.53.207.95 -t "docker stop scriblio-backend && docker run --name scriblio-backend -d -p 3001:3001 ypc2002/scriblio-backend:${{ github.sha }}"
+
