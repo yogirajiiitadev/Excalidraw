@@ -22,7 +22,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build and pushes the image in docker account
+      # Build and push the image in docker account
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
