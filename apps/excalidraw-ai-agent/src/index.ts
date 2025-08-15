@@ -29,6 +29,11 @@ app.use(cors({
 }));
 
 app.use(express.json());
+// This is important for preflight
+app.options("*", cors({
+  origin: "http://scriblio.online",
+  credentials: true
+}));
 
 // removed middleware for now.
 app.post("/generate-drawing/init", /*userAuth, */async (req, res) => {

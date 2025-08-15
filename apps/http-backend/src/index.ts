@@ -23,6 +23,11 @@ app.use(cors({
   },
   credentials: true
 }));
+// This is important for preflight
+app.options("*", cors({
+  origin: "http://scriblio.online",
+  credentials: true
+}));
 
 app.post("/signup", async(req, res) => {
     const parsedData = CreateUserSchema.safeParse(req.body);
