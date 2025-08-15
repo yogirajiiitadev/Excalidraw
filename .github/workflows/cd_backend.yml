@@ -37,8 +37,13 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@13.53.207.95 \
-            "docker stop scriblio-backend || true && \
-            docker rm scriblio-backend || true && \
-            docker run --name scriblio-backend -d -p 3001:3001 ypc2002/scriblio-backend:${{ github.sha }}"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@13.53.207.95 "
+            # Stop and remove any container using port 3001
+            docker ps -q --filter 'publish=3001' | xargs -r docker stop
+            docker ps -aq --filter 'publish=3001' | xargs -r docker rm
+            
+            # Run new container on port 3001 with a fixed name for easier management
+            docker run --name scriblio-backend -d -p 3001:3001 ypc2002/scriblio-backend:${{ github.sha }}
+          "
+
 
