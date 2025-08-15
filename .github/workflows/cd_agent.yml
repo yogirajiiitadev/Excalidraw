@@ -1,0 +1,47 @@
+# Build the docker image
+# Push docker image to docker hub
+# SSH into EC2 machine and re-run the container
+
+name: Continuous Deployment Scriblio ai agent backend
+on: 
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # clone the codebase in temporary ubuntu machine 
+      # used by github to build the image
+      - name: Checkout the code  
+        uses: actions/checkout@v2
+
+      # temporary ubuntu machine logs in to Docker account  
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build and pushes the image in docker account
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/Dockerfile.agent
+          push: true
+          tags: ypc2002/scriblio-agent:${{ github.sha }}
+      
+      # SSH into VM and run the docker container in /EC2
+      - name: Deploy to EC2
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@13.53.207.95 "
+          
+            # Force remove container named scriblio-agent if it exists
+            docker rm -f scriblio-agent || true
+            
+            # Run new container on port 3001 with a fixed name for easier management
+            docker run --name scriblio-agent -d -p 3003:3003 ypc2002/scriblio-agent:${{ github.sha }}
+          "
