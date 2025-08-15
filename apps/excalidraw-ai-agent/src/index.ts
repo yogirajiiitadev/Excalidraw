@@ -15,7 +15,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://scriblio.online"
+  "http://scriblio.online"
 ];
 app.use(cors({
   origin: (origin, callback) => {

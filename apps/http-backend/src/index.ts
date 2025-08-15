@@ -8,7 +8,7 @@ import cors from "cors";
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://scriblio.online"
+  "http://scriblio.online"
 ];
 
 const app = express();
