@@ -12,7 +12,22 @@ import { Request, Response } from "express";
 import { ShapeSchema } from "@repo/common/types";
 config();
 const app = express();
-app.use(cors());
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://scriblio.online"
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 // removed middleware for now.

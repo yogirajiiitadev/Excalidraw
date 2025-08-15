@@ -6,11 +6,22 @@ import { CreateUserSchema, CreateSignInSchema, CreateRoomSchema } from "@repo/co
 import { prismaClient } from "@repo/db/client";
 import cors from "cors";
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://scriblio.online"
+];
+
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:3000", 
-  credentials: true, // Allow cookies and authentication headers
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
 
 app.post("/signup", async(req, res) => {
