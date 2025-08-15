@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { CreateUserSchema, CreateSignInSchema, CreateRoomSchema } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
 import cors from "cors";
-
+// allow local as well as deployed solution
 const allowedOrigins = [
   "http://localhost:3000",
   "http://scriblio.online"
