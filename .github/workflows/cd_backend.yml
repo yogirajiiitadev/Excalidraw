@@ -43,7 +43,7 @@ jobs:
             docker rm -f scriblio-backend || true
             
             # Run new container on port 3001 with a fixed name for easier management
-            docker run -e DATABASE_URL ${{ secrets.DATABASE_URL }} --name scriblio-backend -d -p 3001:3001 ypc2002/scriblio-backend:${{ github.sha }}
+            docker run -e DATABASE_URL=${{ secrets.DATABASE_URL }} --name scriblio-backend -d -p 3001:3001 ypc2002/scriblio-backend:${{ github.sha }}
 
             # Remove unused images/containers to save space
             docker system prune -af
