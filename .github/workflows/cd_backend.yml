@@ -41,6 +41,9 @@ jobs:
             # Stop and remove any container using port 3001
             docker ps -q --filter 'publish=3001' | xargs -r docker stop
             docker ps -aq --filter 'publish=3001' | xargs -r docker rm
+
+            # Force remove container named scriblio-backend if it exists
+            docker rm -f scriblio-backend || true
             
             # Run new container on port 3001 with a fixed name for easier management
             docker run --name scriblio-backend -d -p 3001:3001 ypc2002/scriblio-backend:${{ github.sha }}
