@@ -40,5 +40,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@13.53.207.95 \
             "docker stop scriblio-backend || true && \
             docker rm scriblio-backend || true && \
-            docker run --name scriblio-backend -d -p 3001:3001 your-docker-user/scriblio-backend:247812c9e5ce8d9e9913f8a1504d9edee28f57da"
+            docker run --name scriblio-backend -d -p 3001:3001 your-docker-user/scriblio-backend:${{ github.sha }}"
 
