@@ -31,7 +31,7 @@ jobs:
           push: true
           tags: ypc2002/scriblio-frontend:${{ github.sha }}
       
-      # SSH into VM and run the docker container in /EC2
+      # SSH into VM/EC2 and run the docker container in /EC2
       - name: Deploy to EC2
         run: |
           mkdir -p ~/.ssh
