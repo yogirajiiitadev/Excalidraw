@@ -30,8 +30,8 @@ jobs:
           file: ./docker/Dockerfile.backend
           push: true
           tags: ypc2002/scriblio-backend:${{ github.sha }}
-
-      # SSH into VM and run the docker container in VM
+ 
+      # SSH into VM/EC2 and run the docker container in VM
       - name: Deploy to EC2
         run: |
           mkdir -p ~/.ssh
