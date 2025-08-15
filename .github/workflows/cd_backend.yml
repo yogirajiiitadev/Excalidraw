@@ -38,10 +38,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@13.53.207.95 "
-            # Stop and remove any container using port 3001
-            docker ps -q --filter 'publish=3001' | xargs -r docker stop
-            docker ps -aq --filter 'publish=3001' | xargs -r docker rm
-
+          
             # Force remove container named scriblio-backend if it exists
             docker rm -f scriblio-backend || true
             
