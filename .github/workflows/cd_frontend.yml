@@ -44,4 +44,7 @@ jobs:
             
             # Run new container on port 3000 with a fixed name for easier management
             docker run --name scriblio-frontend -d -p 3000:3000 ypc2002/scriblio-frontend:${{ github.sha }}
+
+            # Remove unused images/containers to save space
+            docker system prune -af
           "

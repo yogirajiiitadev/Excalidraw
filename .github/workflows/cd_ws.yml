@@ -44,4 +44,7 @@ jobs:
             
             # Run new container on port 3001 with a fixed name for easier management
             docker run --name scriblio-ws -d -p 8080:8080 ypc2002/scriblio-ws:${{ github.sha }}
+
+            # Remove unused images/containers to save space
+            docker system prune -af
           "
