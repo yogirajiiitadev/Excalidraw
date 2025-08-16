@@ -10,7 +10,6 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const [err, setErr] = useState(false);
   const [errDisplay, setErrDisplay] = useState("");
   const [errorMessage, setErrorMessage] = useState<{ success: boolean; msg: string } | null>(null);
-
   const router = useRouter();
 
   return (
