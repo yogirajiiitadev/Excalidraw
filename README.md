@@ -2,7 +2,7 @@
 
 ## Architecture Diagram
 
-![Scriblio System Design](assets/Scriblio-system-design.png)
+![Scriblio System Design](assets/Scriblio-system-design2.png)
 
 ---
 
