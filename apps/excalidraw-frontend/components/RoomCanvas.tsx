@@ -11,8 +11,9 @@ export function RoomCanvas({roomId}: {
 }){
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const storedToken = localStorage.getItem("token");
+    const token = storedToken?.split(' ')[1];
     useEffect(()=>{
-        const ws = new WebSocket(`${WS_URL}?token=${storedToken}`);
+        const ws = new WebSocket(`${WS_URL}?token=${token}`);
         ws.onopen = ()=>{
             console.log("Web socket connected");
             setSocket(ws);
