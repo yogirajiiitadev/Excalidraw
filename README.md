@@ -38,3 +38,25 @@
 - **WebSocket** enables real-time sync of shapes across connected clients.  
 - **Redis Queue (optional)** could be added to improve broadcast latency.  
 - **AI chatbot service** orchestrates clarifying questions, session tracking, and LLM integration.
+
+---
+
+## Deployment process
+ - Containerize all 4 services and wrote Dockerfile for each.
+ - Initiate an EC2 AWS machine by configuring security groups and opening following ports on machine.
+    - 22 (for ssh ing into machine)
+    - 80 (http request)
+    - 443 (https request).
+ - Generated key pair so that github workflow could ssh into VM. Stored private key in gthub secrets and stored public key on /authorized_keys directory of VM.
+ - Wrote ci/cd pipeline .yml (github workflow) for each service:
+    - Docker login and build the latest docker image via the code pushed on main branch (Provide docker hub creds via the github secrets).
+    - Push the built image on dockerhub account.
+    - SSH into VM.
+    - Stop the current containers and run the latest pulled docker image. (Restart the containers).
+    - DO docker system prun -af to deleted the containers and images that are not in use.
+ - SSH into VM and install/configure nginx reverse proxy server. 
+    sudo nano /etc/nginx/nginx.conf
+    sudo nginx -s reload
+ - Based on sub domain in the request do port forwarding to respective processes mapped via the container mapping to local machine port mapping (refer another Readme in repo for compete code of nginx.conf).
+
+ ---
