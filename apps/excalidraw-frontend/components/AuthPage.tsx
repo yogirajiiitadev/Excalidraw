@@ -1,9 +1,12 @@
 "use client";
 import { handleAuth } from "@/functions/handleAuth";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function AuthPage({ isSignin }: { isSignin: boolean }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,6 +14,10 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const [errDisplay, setErrDisplay] = useState("");
   const [errorMessage, setErrorMessage] = useState<{ success: boolean; msg: string } | null>(null);
   const router = useRouter();
+
+  if (!mounted) {
+    return null; // avoids SSR vs CSR mismatch
+  }
 
   return (
     <div className="w-screen h-screen flex justify-center items-center bg-gradient-to-r from-[rgba(48,148,182,0.95)] to-white">
