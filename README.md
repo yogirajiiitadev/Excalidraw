@@ -1,89 +1,40 @@
-<<<<<<< HEAD
-# Excalidraw
-A collaborative drawing application
-=======
-# Turborepo starter
+# Scriblio System Design
 
-This Turborepo starter is maintained by the Turborepo core team.
+## Architecture Diagram
 
-## Using this example
+![Scriblio System Design](assets/Scriblio-system-design.png)
 
-Run the following command:
+---
 
-```sh
-npx create-turbo@latest
-```
+## Flow of the System
 
-## What's inside?
+1. Client submits login credentials to the HTTP backend service via the Next.js frontend.  
+2. HTTP backend verifies/inserts the credentials using a Postgres database via an ORM called Prisma client.  
+3. Backend service stores the JWT token on the client/browser's local storage.  
+4. Frontend tries to connect to a Drawing room from the redirected Dashboard. A request goes out to the DB to fetch existing shapes in that room.  
+5. DB returns the existing shapes and they are rendered on the frontend canvas.  
+6. Frontend connects to a WebSocket channel and tries to draw some shapes on the canvas.  
+7. The shapes are stored in JSON format in the Postgres DB.  
+8. The same shapes are broadcasted to all clients connected to the same room from which the shapes were received.  
+   - *(Note: Steps 7 and 8 could be optimized by using a Redis queue service to reduce latency in WebSocket broadcast.)*  
+9. The same shapes are rendered on the canvas of another client connected to the same room.  
+10. A third client prompts the AI chatbot service to generate a specific drawing using the `generate-drawing/init` endpoint.  
+11. Since the `init` endpoint was hit, the chatbot service instantiates the bot class and maps the session ID with this bot. It triggers the `nextClarifyingQuestion` function.  
+12. The model returns clarifying questions to the chatbot service. The chatbot service attaches the sessionId and clarifying question in the response and sends back to the frontend.  
+13. Based on the clarifying question, the client answers them and sends back to the model along with the sessionId to the chatbot service so that it can keep track of the corresponding bot.  
+    - *(This process continues until the `questionsLimit` is reached, as defined in the bot class.)*  
+14. Once the `questionsLimit` is reached, based on the `messageHistory` a prompt is generated with complete context of the situation and sent to the LLM.  
+15. The JSON output generated is first parsed using a **Zod schema** to ensure it matches the schema used on the frontend.  
+16. This JSON is returned to the frontend.  
+17. The JSON is rendered on the HTML canvas and displayed on the drawing board to the client.  
+18. Once the client accepts it, the message is broadcasted to all other members of the room via the WebSocket server.  
+19. Further, the same steps are followed as mentioned in **7, 8, and 9**.  
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
->>>>>>> 1945d49 (feat(create-turbo): create basic)
+## Notes
+- Authentication handled via **JWT** stored on the client-side.  
+- Persistent storage of drawings and chat flow handled by **Postgres + Prisma**.  
+- **WebSocket** enables real-time sync of shapes across connected clients.  
+- **Redis Queue (optional)** could be added to improve broadcast latency.  
+- **AI chatbot service** orchestrates clarifying questions, session tracking, and LLM integration.
