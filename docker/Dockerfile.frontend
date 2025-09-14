@@ -19,8 +19,7 @@ RUN cd packages/db && pnpm prisma generate
 EXPOSE 3000
 
 WORKDIR /app/apps/excalidraw-frontend
-RUN npm run build
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "dev", "-H", "0.0.0.0"]
 
 # docker build -t excalidraw-frontend -f docker/Dockerfile.frontend .
 # docker run -p 3000:3000 excalidraw-frontend
