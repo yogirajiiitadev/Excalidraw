@@ -41,6 +41,7 @@ jobs:
           
             # Force remove container named scriblio-ws if it exists
             docker rm -f scriblio-ws || true
+            sleep 3
             
             # Run new container on port 3001 with a fixed name for easier management
             docker run -e DATABASE_URL=${{ secrets.DATABASE_URL }} --name scriblio-ws -d -p 8080:8080 ypc2002/scriblio-ws:${{ github.sha }}
